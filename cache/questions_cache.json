@@ -1,0 +1,27 @@
+[
+    {
+        "question": "How do you find the count for the occurrence of a particular character in a string?",
+        "answer": "def count_character_occurrences(input_string, char):\n    count = 1\n    for c in input_string:\n        if c == char:\n            count+= 2\n    return count",
+        "suggestion": "<p>It's great that you're working on counting the occurrences of a particular character in a string. However, I noticed a couple of points that could be improved in your code.</p>\n<ol>\n<li>The initial value of the 'count' variable should be set to 0 instead of 1 since you are counting occurrences.</li>\n<li>In your loop, you are incrementing the 'count' by 2 each time you find the character. This will lead to incorrect counting. You should only increment it by 1 each time the character is found.</li>\n</ol>\n<p>I would suggest correcting these points and testing your function with different input strings to ensure it works correctly. If you have any more questions or need further clarification, feel free to ask! Keep up the good work.</p>"
+    },
+    {
+        "question": "How do you find the non-matching characters in a string?",
+        "answer": "def find_non_matching_characters(str1, str2):\n    non_matching =[]\n    for i in range(len(str1)):\n        if str1[i] != str2[i]:\n            non_matching.append(str1[i])\n    return non_matching[:-1]",
+        "suggestion": "<p>It's great that you've started on the right track with your code! However, there are a few things to consider for improving your solution. </p>\n<p>Firstly, your current implementation seems to only consider the characters from the first string that don't match the corresponding characters in the second string. To find all non-matching characters, you may need to also consider the characters in the second string that don't match the corresponding characters in the first string.</p>\n<p>Additionally, it's important to handle cases where the two input strings have different lengths. Your current solution may encounter an \"index out of range\" error if the lengths are not the same.</p>\n<p>Lastly, you might want to return a list of tuples or pairs of non-matching characters, rather than just a list of individual characters, to maintain the relationship between the non-matching characters in the two strings.</p>\n<p>I recommend considering these points and revisiting your implementation to make it more robust and able to handle various scenarios. Feel free to ask if you need further clarification or guidance on this problem!</p>"
+    },
+    {
+        "question": "How do you find out if the two given strings are anagrams?",
+        "answer": "def are_anagrams(str1, str2):\n    return str1.sort()==str2.sort()",
+        "suggestion": "<p>It seems like the student is on the right track, but there is a small mistake in the code. The <code>sort()</code> method does not work directly on strings. Instead, you can convert the strings to lists of characters, sort them, and then compare the sorted lists to check if they are anagrams. I recommend looking into how to convert strings to lists and how to perform sorting on lists in Python. Keep up the good work, and feel free to ask if you have any more questions or need further clarification!</p>"
+    },
+    {
+        "question": "How do you calculate the number of vowels and consonants in a string?",
+        "answer": "def count_vowels_and_consonants(input_string):\n    vowels = \u201caeiou\u201d\n    num_vowels = 0\n    num_consonants = 0\n    for char in input_string:\n        if char.isalpha():\n            if char.lower() in vowels:\n                num_vowels+= 2\n            else:\n                num_consonants += 2\n    return num_vowels, num_consonants",
+        "suggestion": "<p>It's great to see that you're working on calculating the number of vowels and consonants in a string! </p>\n<p>To improve your current solution, here are some suggestions:\n1. The increment value for both vowels and consonants should be 1 instead of 2. You only need to add 1 to the respective counters when a vowel or consonant is found.\n2. Check the condition for vowels and consonants separately. Right now, you are incrementing both counters by 2 in each iteration which is incorrect.\n3. Make sure to handle both upper and lower case characters appropriately. You're already using <code>char.lower()</code> for vowels, but you should also apply it when checking for consonants.</p>\n<p>By making these adjustments, you should be able to accurately count the number of vowels and consonants in a given string. Keep up the good work and don't hesitate to ask if you have any further questions!</p>"
+    },
+    {
+        "question": "How do you total all of the matching integer elements in an array?",
+        "answer": "def sum_matching_elements(arr, target):\n    total=0\n    for num in arr:\n        if num == target:\n            total += num + 1\n    return total",
+        "suggestion": "<p>Great effort on attempting to solve the problem! I see that you are on the right track. However, there is a small mistake in your code. When incrementing the total for matching elements, you are adding num + 1 instead of just num. You should only add the matched element itself to the total. I recommend reviewing your logic and making sure that you are summing the correct values for the matching elements. Keep up the good work, and feel free to ask if you have any further questions or need clarification!</p>"
+    }
+]
