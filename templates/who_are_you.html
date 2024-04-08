@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pre-Login Form</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 20px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <form action="/submit-prelogin" method="post">
+        <label for="question1">Question 1: Your favorite IDE?</label>
+        <input type="radio" id="ide1" name="favorite_ide" value="VSCode">
+        <label for="ide1">VSCode</label><br>
+        <input type="radio" id="ide2" name="favorite_ide" value="IntelliJ">
+        <label for="ide2">IntelliJ</label><br>
+        <input type="radio" id="ide3" name="favorite_ide" value="PyCharm">
+        <label for="ide3">PyCharm</label><br><br>
+
+        <label for="student_name">Student Name:</label>
+        <input type="text" id="student_name" name="student_name" required><br><br>
+
+        <label for="student_id">Student ID:</label>
+        <input type="text" id="student_id" name="student_id" required><br><br>
+
+        <label for="comment">Comments:</label>
+        <textarea id="comment" name="comment"></textarea><br><br>
+
+        <label for="programming_language">Programming Language:</label>
+        <select id="programming_language" name="programming_language" required>
+            <option value="Python">Python</option>
+            <option value="Java">Java</option>
+        </select><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

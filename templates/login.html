@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input, select {
+            width: 95%;
+            padding: 8px;
+            margin: 5px 0 20px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <form action="/start" method="post">
+        <label for="student_name">Student Name:</label>
+        <input type="text" id="student_name" name="student_name" required>
+
+        <label for="student_id">Unique ID:</label>
+        <input type="text" id="unique_id" name="unique_id" required>
+
+        <label for="programming_language">Programming Language:</label>
+        <select id="programming_language" name="programming_language" required>
+            <option value="Python">Python</option>
+            <option value="Java">Java</option>
+        </select>
+
+        <button type="submit">Start</button>
+    </form>
+</body>
+</html>

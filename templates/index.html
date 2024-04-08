@@ -7,7 +7,17 @@
       <script type="module" src="https://md-block.verou.me/md-block.js"></script>
       <script>hljs.initHighlightingOnLoad();</script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script>
+    <!-- <script>
+        window.onload = () => {
+            const source = new EventSource("/stream");
+            source.onmessage = function(event) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById("model-reponse").textContent += event.data;
+            };
+        };
+    </script>
+     -->
+    <!-- <script>
         function checkContentStatus() {
             fetch('/get-content')
                 .then(response => response.json())
@@ -17,7 +27,7 @@
                         // const renderedContent = marked(data.content);
                         document.getElementById('model-response').innerHTML = data.content;
                         document.getElementById('loading').style.display = 'none';
-                        document.getElementById('model-response').style.display = 'block';
+                        // document.getElementById('model-response').style.display = 'block';
                     } else {
                         // Check again after some delay
                         setTimeout(checkContentStatus, 1000);
@@ -29,13 +39,46 @@
         window.onload = function() {
             checkContentStatus();
         };
-    </script>
+    </script> -->
+    <script>
+    function checkContentStatus() {
+        fetch('/get-content')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ready') {
+                    document.getElementById('model-response').innerHTML = data.content;
+                    document.getElementById('loading').style.display = 'none';
+                    // document.getElementById('model-response').style.display = 'block';
+                } else {
+                    // Update the loading bar progress before checking again
+                    updateLoadingBar();
+
+                    // Check again after some delay
+                    setTimeout(checkContentStatus, 1000);
+                }
+            })
+            .catch(error => console.error('Error fetching content:', error));
+    }
+
+    function updateLoadingBar() {
+        const bar = document.getElementById('loadingBar');
+        let width = parseInt(bar.style.width, 10);
+
+        // Increase the width of the loading bar, capping it at 90% to indicate ongoing process
+        width = Math.min(90, width + 10);
+        bar.style.width = width + '%';
+    }
+
+    window.onload = function() {
+        checkContentStatus();
+    };
+</script>
     <meta charset="UTF-8">
     <title>Robot Page</title>
     <style>
     #circular-image {
         float: left;
-        margin-top: 175px;
+        margin-top: 250px;
         margin-right: 20px;
         border-radius: 50%;
         width: 200px; /* or any other size */
@@ -50,9 +93,10 @@
         border-radius: 10px;
         padding: 20px;
         width: 1000px;  /* Set your desired width */
-        height: 500px; /* Set your desired height */
+        height: 700px; /* Set your desired height */
         resize: none;  /* Optional: Prevents resizing */
         overflow: auto;
+        padding-top:5px;
     }
     </style>
     <style>
@@ -81,7 +125,7 @@
             padding: 20px;
             font-size: 30px;
             width: 1000px;  /* Set your desired width */
-            height: 500px; /* Set your desired height */
+            height: 700px; /* Set your desired height */
             resize: none;  /* Optional: Prevents resizing */
             justify-content: center; /* Center horizontally */
             align-items: center;     /* Center vertically */
@@ -90,10 +134,48 @@
     <style>
         #loading {
             text-align: center;
+            margin-top: 20px;
             padding: 20px;
             font-size: 30px;
             justify-content: center; /* Center horizontally */
             align-items: center;     /* Center vertically */
+        }
+    </style>
+    <style>
+      .custom-heading {
+        margin-bottom: 0px;
+      }
+    </style>
+    <style>
+      .custom-paragraph {
+        margin-top: 5px;
+      }
+    </style>
+    <style>
+       .small-text {
+          font-size: 14px;
+        }
+
+        .medium-text {
+          font-size: 16px;
+        }
+        
+        .large-text {
+          font-size: 24px;
+        }
+        #loadingBar {
+            width: 0%;
+            height: 30px;
+            background-color: green;
+            border-radius: 10px;
+        }
+        #container {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 10px;
+        }
+        .multiline {
+          white-space: pre-wrap;
         }
     </style>
 </head>
@@ -110,28 +192,37 @@
         {% endif %}
         <div id="{{'fixed-size-textbox' if div_class != 'home' }}" class="{{'centered-container' if div_class == 'home' }}">
             {% if question_num is not none %} 
-            <p>Question Number: Q{{ question_num }}</p>
+            <h4 class="custom-heading">Question Number</h4>
+            <p class="custom-paragraph medium-text">Q{{ question_num }}</p>
             
             {% else %}
             <p>Hey I am Your friendly AI code Assistant! I can Help you solve programming problems with a click of a button!</p>
             {% endif %}
             {% if question_str is not none %} 
-            <p id="markdown-content">Question:{{ question_str|safe }}</p>
-            <p id="html-content"></p>
+            <h4 class="custom-heading">Question</h4>
+            
+            <p class="custom-paragraph medium-text" id="markdown-content">{{ question_str|safe }}</p>
+            <p class="custom-paragraph medium-text" id="html-content"></p>
             {% endif %}
             {% if student_code is not none %} 
-            <p>Code Given by the Student:</p>
-            <pre><code class="python">{{ student_code|safe }}</code></pre>
+            <h4 class="custom-heading">Your Code</h4>
+            <pre><code class="python small-text">{{ student_code|safe }}</code></pre>
             {% endif %}
             {% if error is not none %}
-            <p>Error/Traceback</p>
+            <h4 class="custom-heading">Error/Traceback</h4>
             <pre>{{ error|safe }}</pre>
             {% endif %}
             {% if student_code is not none %} 
             
-            <p>Suggestion given by the model:</p>
-            <div id="loading">Loading...</div>
-            <div id="model-response"></div>
+            <h4 class="custom-heading">Suggestion given by the model</h4>
+            <div id="loading">
+                Loading...
+                <div id="container">
+                    <div id="loadingBar" style="width: 0%; height: 30px; background-color: green;"></div>
+                </div>
+            </div>
+            <!-- <div class="custom-paragraph medium-text" id="loading">Loading...</div> -->
+            <div class="custom-paragraph medium-text" id="model-response"></div>
             {% endif %}
             
         
@@ -139,9 +230,9 @@
         </div>
     </div>
     <div style="clear: both;" id="button-box">
-        <button onclick="window.location.href='code_helper.html';" class="button-element">Home</button>
+        <button onclick="window.location.href='code_helper';" class="button-element">Home</button>
         {% for i in range(1, num_of_questions+1) %}
-            <button onclick="window.location.href='code_helper.html?question=Q{{ i }}';" class="button-element">Q{{ i }}</button>
+            <button onclick="window.location.href='code_helper?question=Q{{ i }}';" class="button-element">Q{{ i }}</button>
         {% endfor %}
         
     </div>

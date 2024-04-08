@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome Page</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .welcome-container {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <h1>Welcome!</h1>
+        <p>Thank you for submitting the form.</p>
+        <p>You will be redirected shortly...</p>
+    </div>
+
+    <script>
+        // Function to redirect after a few seconds
+        function redirect() {
+            setTimeout(function() {
+                window.location.href = "code_helper";  // Change URL to your target page
+            }, 1000);
+        }
+
+        // Call the redirect function when the page loads
+        window.onload = redirect;
+    </script>
+</body>
+</html>

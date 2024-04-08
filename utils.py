@@ -6,6 +6,7 @@ import multiprocessing
 import sys
 import io
 import subprocess
+import time
 
 test_code = """
 import io
@@ -24,13 +25,40 @@ def run_tests():
 """
 
 
-def generate_suggestion(messages, client):
-    completion = client.chat.completions.create(
-      model="gpt-3.5-turbo",
-      messages=messages
-    )
-    print("GPT Called!")
-    return completion.choices[0].message.content
+def generate_suggestion(messages, client, model):
+    start_time = time.time()
+    if 'claude' in model:
+        completion = client.messages.create(
+            model=model,
+            max_tokens = 500,
+            system=messages[0]['content'],
+            messages=messages[1:]
+        )
+
+        completion = convert_python(completion.content[0].text)
+
+    else:
+        
+        if model=="gpt-3.5-turbo-instruct":
+            completion = client.completions.create(
+              model=model,
+              prompt="Say this is a test",
+              max_tokens=7,
+              temperature=0
+            )
+        else:
+            completion = client.chat.completions.create(
+              model=model,
+              messages=messages
+            )
+        # temp_var = completion.choices[0].message.content
+        completion = convert_python(completion.choices[0].message.content)
+    end_time = time.time()
+    execution_time = end_time - start_time
+    execution_time = round(execution_time, 3)
+    print(f"Time For LLM Call: {execution_time} seconds")
+    print("LLM Called!")
+    return completion
 
 def modify_tester(code, q_key):
     # Read the original file
@@ -138,23 +166,33 @@ def read_from_json(filename):
     with open(filename, 'r') as file:
         data = json.load(file)
     return data
-    
+
+def convert_python(markdown_text):
+    # Pattern to find Markdown code blocks
+    pattern = r'```python(.*?)```'
+    replacement = r'<code class="python medium-text"><pre>\1<pre></code>'
+    html_text = re.sub(pattern, replacement, markdown_text, flags=re.DOTALL)
+    return html_text
 
 def convert_to_template(question_str, code, solution, error_num, error):
     
-    first_line = "Given above is a programming question, a canonical solution and the corresponding wrong answer from a student. Please give a helpful and polite explanation as to the next steps the student can take to improve their answer"
+    first_line = "Given below is a programming question, a canonical solution and the corresponding wrong answer from a student. Please give a helpful and polite explanation as to the next steps the student can take to improve their answer"
     if error_num==1:
         # Compilation Error
-        first_line = "Given above is a programming question,a canonical solution, the error message from compiling the code, and the corresponding wrong answer from a student"
+        first_line = "Given below is a programming question,a canonical solution, the error message from compiling the code, and the corresponding wrong answer from a student"
         
     elif error_num==2 or error_num==3:
-        first_line = "Given above is a programming question, a canonical solution, the error message from executing the code against test cases, and the corresponding wrong answer from a student"
+        first_line = "Given below is a programming question, a canonical solution, the error message from executing the code against test cases, and the corresponding wrong answer from a student"
     error_m=''
     if error:
         error_m = f"Error:\n{error}\n\n"
 
-    input_str = f"Question:\n{question_str}\n\nStudent Answer:\n{code}\n\nCanonical Solution:\n{solution}\n\n{error_m}{first_line}.You are encouraged to ask questions to the student and show simple related examples to lead the student in the right direction to figure out the answer on their own.  Be concise in your response. DO NOT INCLUDE CODE OR THE ACTUAL ANSWER IN YOUR RESPONSE. Start the response with something that encourages the student and commends the student on his/her progress towards the task. Do not make any mention about the canonical solution as the students will not have access to that."
-    print(input_str)
-    
-    return [{"role": "system", "content": "You are a polite and helpful assistant to help students learn programming. You will be deployed in an application where you must display suggestions to the student. You will directly be addressing students and helping them make corrections in their code so that they can get it right. Do not speak about the student in the third person."},
+    # input_str = f"Question:\n{question_str}\n\nStudent Answer:\n{code}\n\n{error_m}Canonical Solution:\n{solution}\n\n{first_line}.You are encouraged to ask questions to the student and show simple related examples to lead the student in the right direction to figure out the answer on their own. DO NOT INCLUDE CODE OR THE ACTUAL ANSWER IN YOUR RESPONSE. Start the response with something that encourages the student and commends the student on his/her progress towards the task. Do not make any mention about the canonical solution as the students will not have access to that."
+    input_str = f"Question:\n{question_str}\n\nStudent Answer:\n{code}\n\n{error_m}Canonical Solution:\n{solution}\n\n Suggestion:"
+    system_str = f"You are a polite and helpful assistant to help students learn programming. You will be deployed in an application where you must display suggestions to the student under the heading \"Suggestion:\". You will directly be addressing students and helping them make corrections in their code so that they can get it right. Do not speak about the student in the third person. {first_line}.You are encouraged to ask questions to the student and show simple related examples to lead the student in the right direction to figure out the answer on their own. DO NOT INCLUDE CODE OR THE ACTUAL ANSWER IN YOUR RESPONSE. Start the response with something that encourages the student and commends the student on his/her progress towards the task. Do not make any mention about the canonical solution as the students will not have access to that."
+    messages = [{"role": "system", "content": system_str},
     {"role": "user", "content": input_str}]
+
+    print(json.dumps(messages, indent=4))
+    
+    return messages
