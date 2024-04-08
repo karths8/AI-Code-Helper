@@ -1,4 +1,4 @@
-from utils import extract_cells, write_to_json, convert_to_template, read_from_json
+from utils import extract_cells, write_to_json, convert_to_template, read_from_json, generate_suggestion
 from openai import OpenAI
 import markdown
 import os
@@ -17,12 +17,8 @@ def fill_cache():
         q, a = i['question'], i['answer']
         if questions_file[idx]['answer']!=a:
             messages = convert_to_template(q, a)
-            completion = client.chat.completions.create(
-              model="gpt-3.5-turbo",
-              messages=messages
-            )
-            print("GPT Called!")
-            suggestion = markdown.markdown(completion.choices[0].message.content)
+            err = check_python_code(a)
+            suggestion = markdown.markdown(generate_suggestion(messages,err, client))
         else:
             suggestion = questions_file[idx]['suggestion']
         questions_cache.append({'question':q, 'answer':a, 'suggestion': suggestion})

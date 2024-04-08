@@ -1,0 +1,4 @@
+{
+    "Q1": "\ndef square_pattern(n: int):\n    for i in range(n):\n        print('* ' * n)\n",
+    "Q2": "\ndef right_triangle(n: int):\n    for i in range(1, n + 1):\n        print('* ' * i)\n"
+}

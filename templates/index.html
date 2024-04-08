@@ -111,11 +111,13 @@
         <div id="{{'fixed-size-textbox' if div_class != 'home' }}" class="{{'centered-container' if div_class == 'home' }}">
             {% if question_num is not none %} 
             <p>Question Number: Q{{ question_num }}</p>
+            
             {% else %}
             <p>Hey I am Your friendly AI code Assistant! I can Help you solve programming problems with a click of a button!</p>
             {% endif %}
             {% if question_str is not none %} 
-            <p>Question: {{ question_str }}</p>
+            <p id="markdown-content">Question:{{ question_str|safe }}</p>
+            <p id="html-content"></p>
             {% endif %}
             {% if student_code is not none %} 
             <p>Code Given by the Student:</p>
@@ -134,11 +136,25 @@
     </div>
     <div style="clear: both;" id="button-box">
         <button onclick="window.location.href='code_helper.html';" class="button-element">Home</button>
-        {% for i in range(1, 6) %}
+        {% for i in range(1, num_of_questions+1) %}
             <button onclick="window.location.href='code_helper.html?question=Q{{ i }}';" class="button-element">Q{{ i }}</button>
         {% endfor %}
         
     </div>
+
+    <script>
+        // Get the Markdown content from the div
+        const markdownText = document.getElementById('markdown-content').innerText;
+
+        // Convert the Markdown text to HTML
+        const htmlContent = marked.parse(markdownText);
+
+        // Display the HTML content in another div
+        document.getElementById('html-content').innerHTML = htmlContent;
+
+        // Optionally, hide the original Markdown content
+        document.getElementById('markdown-content').style.display = 'none';
+    </script>
 
 </body>
 </html>
