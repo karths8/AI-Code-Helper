@@ -123,6 +123,10 @@
             <p>Code Given by the Student:</p>
             <pre><code class="python">{{ student_code|safe }}</code></pre>
             {% endif %}
+            {% if error is not none %}
+            <p>Error/Traceback</p>
+            <pre>{{ error|safe }}</pre>
+            {% endif %}
             {% if student_code is not none %} 
             
             <p>Suggestion given by the model:</p>
