@@ -7,23 +7,15 @@ import sys
 import io
 import subprocess
 import time
+import os
 
-test_code = """
-import io
-import sys
-
-def run_tests():
-    original_stdout = sys.stdout
-    for n, expected in tcs.items():
-        n = int(n)
-        sys.stdout = io.StringIO()  # Redirect stdout to capture print output
-        square_pattern(n)
-        output = sys.stdout.getvalue()
-        sys.stdout = original_stdout  # Reset stdout back to original
-        assert output.strip() == expected.strip(), f"Test failed for n={n}. Expected:\\n{expected}\\nGot:\\n{output}"
-    print("All tests passed.")
-"""
-
+def make_directory(dir_path):
+    if not os.path.exists(dir_path):
+        # Create the directory
+        os.makedirs(dir_path)
+        print(f"Directory created at {dir_path}")
+    else:
+        print(f"Directory already exists at {dir_path}")
 
 def generate_suggestion(messages, client, model):
     start_time = time.time()
@@ -38,19 +30,10 @@ def generate_suggestion(messages, client, model):
         completion = convert_python(completion.content[0].text)
 
     else:
-        
-        if model=="gpt-3.5-turbo-instruct":
-            completion = client.completions.create(
-              model=model,
-              prompt="Say this is a test",
-              max_tokens=7,
-              temperature=0
-            )
-        else:
-            completion = client.chat.completions.create(
-              model=model,
-              messages=messages
-            )
+        completion = client.chat.completions.create(
+          model=model,
+          messages=messages
+        )
         # temp_var = completion.choices[0].message.content
         completion = convert_python(completion.choices[0].message.content)
     end_time = time.time()
@@ -71,10 +54,6 @@ def modify_tester(code, q_key):
     # Replace the placeholder with the replacement string
     content = content.replace('<FUNCTION>', code).replace("<QUESTION>", f"'{q_key}'").replace("<FUNCTION_NAME>", f_name)
     return content
-    
-    # Write the modified content back to the file (or a new file)
-    # with open('temp/tester_temp.py', 'w') as file:
-    #     file.write(content)
 
 def run_code(q_key, code):
     try:
@@ -98,13 +77,6 @@ def run_code(q_key, code):
             error_traceback = traceback.format_exc()
         # Catch any execution errors and assertion errors for the test cases
         return 2,error_traceback
-
-    # if result.stderr:
-    #     assert_pattern = "AssertionError:(.*)"
-    #     formatted_stderr = result.stderr.replace("\\n", "\n")
-    #     match = re.search(assert_pattern, formatted_stderr, re.DOTALL)
-    #     error_string = match.group(1).strip()
-    #     return 2, error_string
     
     return 0,"All tests Passed!"
 

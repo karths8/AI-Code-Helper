@@ -3,43 +3,11 @@
 <head>
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/styles/default.min.css">
+    <link rel="stylesheet" href="style.css">
       <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.0.3/highlight.min.js"></script>
       <script type="module" src="https://md-block.verou.me/md-block.js"></script>
       <script>hljs.initHighlightingOnLoad();</script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- <script>
-        window.onload = () => {
-            const source = new EventSource("/stream");
-            source.onmessage = function(event) {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById("model-reponse").textContent += event.data;
-            };
-        };
-    </script>
-     -->
-    <!-- <script>
-        function checkContentStatus() {
-            fetch('/get-content')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'ready') {
-                        // Convert Markdown to HTML
-                        // const renderedContent = marked(data.content);
-                        document.getElementById('model-response').innerHTML = data.content;
-                        document.getElementById('loading').style.display = 'none';
-                        // document.getElementById('model-response').style.display = 'block';
-                    } else {
-                        // Check again after some delay
-                        setTimeout(checkContentStatus, 1000);
-                    }
-                })
-                .catch(error => console.error('Error fetching content:', error));
-        }
-
-        window.onload = function() {
-            checkContentStatus();
-        };
-    </script> -->
     <script>
     function checkContentStatus() {
         fetch('/get-content')
@@ -74,118 +42,120 @@
     };
 </script>
     <meta charset="UTF-8">
-    <title>Robot Page</title>
-    <style>
-    #circular-image {
-        float: left;
-        margin-top: 250px;
-        margin-right: 20px;
-        border-radius: 50%;
-        width: 200px; /* or any other size */
-        height: 200px; /* should be the same as width for a perfect circle */
-    }
-    </style>
-    <style>
-    #fixed-size-textbox {
-        display: inline-block; 
-        vertical-align: top;
-        border: 2px solid black;
-        border-radius: 10px;
-        padding: 20px;
-        width: 1000px;  /* Set your desired width */
-        height: 700px; /* Set your desired height */
-        resize: none;  /* Optional: Prevents resizing */
-        overflow: auto;
-        padding-top:5px;
-    }
-    </style>
-    <style>
-    #button-box {
-        margin-left: 400px;
-        padding: 20px;
-    }
-    </style>
-    <style>
-    .button-element {
-        width: 70px;
-        height: 45px;
-        margin: 20px;
-        padding: 10px;
-        border: 0.5px solid black;
-        border-radius: 5px;
-    }
-    </style>
-    <style>
-        .centered-container {
-            display: flex;
-            vertical-align: top;
-            text-align: center;
-            border: 2px solid black;
-            border-radius: 10px;
-            padding: 20px;
-            font-size: 30px;
-            width: 1000px;  /* Set your desired width */
-            height: 700px; /* Set your desired height */
-            resize: none;  /* Optional: Prevents resizing */
-            justify-content: center; /* Center horizontally */
-            align-items: center;     /* Center vertically */
-        }
-    </style>
-    <style>
-        #loading {
-            text-align: center;
-            margin-top: 20px;
-            padding: 20px;
-            font-size: 30px;
-            justify-content: center; /* Center horizontally */
-            align-items: center;     /* Center vertically */
-        }
-    </style>
-    <style>
-      .custom-heading {
-        margin-bottom: 0px;
-      }
-    </style>
-    <style>
-      .custom-paragraph {
-        margin-top: 5px;
-      }
-    </style>
-    <style>
-       .small-text {
-          font-size: 14px;
-        }
+    <title>Code Helper</title>
+<style>
+#circular-image {
+    float: left;
+    margin-top: 250px;
+    margin-right: 20px;
+    border-radius: 50%;
+    width: 200px; /* or any other size */
+    height: 200px; /* should be the same as width for a perfect circle */
+}
+#fixed-size-textbox {
+    display: inline-block; 
+    vertical-align: top;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 20px;
+    width: 1000px;  /* Set your desired width */
+    height: 700px; /* Set your desired height */
+    resize: none;  /* Optional: Prevents resizing */
+    overflow: auto;
+    padding-top:5px;
+}
+#button-box {
+    margin-left: 500px;
+    padding: 20px;
+}
 
-        .medium-text {
-          font-size: 16px;
-        }
-        
-        .large-text {
-          font-size: 24px;
-        }
-        #loadingBar {
-            width: 0%;
-            height: 30px;
-            background-color: green;
-            border-radius: 10px;
-        }
-        #container {
-            width: 100%;
-            background-color: #ddd;
-            border-radius: 10px;
-        }
-        .multiline {
-          white-space: pre-wrap;
-        }
-    </style>
+.button-element {
+    background-color: #4CAF50; /* Green background */
+    border: black;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 10px;
+    cursor: pointer;
+    border-radius: 5px; /* Rounded corners */
+    transition-duration: 0.4s; /* Smooth transition effect */
+}
+
+.button-element:hover {
+    background-color: #45a049; /* Darker shade for hover effect */
+}
+
+/* .button-element {
+    width: 70px;
+    height: 45px;
+    margin: 20px;
+    padding: 10px;
+    border: 0.5px solid black;
+    border-radius: 5px;
+} */
+.centered-container {
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 20px;
+    font-size: 30px;
+    width: 1000px;  /* Set your desired width */
+    height: 700px; /* Set your desired height */
+    justify-content: center; /* Center horizontally */
+    align-items: center;     /* Center vertically */
+    resize: none;  /* Optional: Prevents resizing */
+    overflow: auto;
+}
+#loading {
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+    font-size: 30px;
+    justify-content: center; /* Center horizontally */
+    align-items: center;     /* Center vertically */
+}
+.custom-heading {
+    margin-bottom: 0px;
+}
+.custom-paragraph {
+    margin-top: 5px;
+}
+.small-text {
+  font-size: 14px;
+}
+
+.medium-text {
+  font-size: 17px;
+}
+
+.large-text {
+  font-size: 24px;
+}
+#loadingBar {
+    width: 0%;
+    height: 30px;
+    background-color: green;
+    border-radius: 10px;
+}
+#container {
+    width: 100%;
+    background-color: #ddd;
+    border-radius: 10px;
+}
+.multiline {
+  white-space: pre-wrap;
+}
+</style>
 </head>
-
-
-    
 <body>
     <div>
         <img src="{{ url_for('static', filename='helpful_robot.png') }}" id="circular-image">
-        {% if question_num is none %} 
+        {% if question_num is none or results is not none %} 
             {% set div_class = 'home' %}
         {% else %}
             {% set div_class = '' %}
@@ -195,7 +165,7 @@
             <h4 class="custom-heading">Question Number</h4>
             <p class="custom-paragraph medium-text">Q{{ question_num }}</p>
             
-            {% else %}
+            {% elif results is none %}
             <p>Hey I am Your friendly AI code Assistant! I can Help you solve programming problems with a click of a button!</p>
             {% endif %}
             {% if question_str is not none %} 
@@ -224,6 +194,27 @@
             <!-- <div class="custom-paragraph medium-text" id="loading">Loading...</div> -->
             <div class="custom-paragraph medium-text" id="model-response"></div>
             {% endif %}
+            {% if results is not none %} 
+            <h4 class="custom-heading"> Result for Questions</h4>
+            {% for key, d in results.items() %}
+                <h4 class="custom-heading"> Result for Question {{key}}</h4>
+                {% if d["score"]==1 %} 
+                    {% set message = "" %}
+                {% else %}
+                    {% set message = "Error:\n" %}
+                {% endif %}
+                <pre class="medium-text" style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;"><strong>{{ message }}</strong>{{ d["error"] }}</pre>
+                <p class="medium-text"><strong>Score:</strong> {{ d["score"] }} / 1</p>
+            {% endfor %}
+            <br>
+            <p class="large-text"><strong>Total Score:</strong> {{ total_score }} / {{ results|length }}</p>
+            <form action="/submit" method="post">
+                <!-- Add other form elements here as needed -->
+                <button type="submit" class="button-element">Submit</button>
+            </form>
+            <!-- <button onclick="window.location.href='submit';" class="button-element">Submit</button> -->
+            {% endif %}
+            
             
         
         
@@ -234,7 +225,7 @@
         {% for i in range(1, num_of_questions+1) %}
             <button onclick="window.location.href='code_helper?question=Q{{ i }}';" class="button-element">Q{{ i }}</button>
         {% endfor %}
-        
+        <button onclick="window.location.href='code_helper?question=finish';" class="button-element">Finish</button>
     </div>
 
     <script>
