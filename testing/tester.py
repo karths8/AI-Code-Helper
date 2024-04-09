@@ -9,7 +9,7 @@ import json
 <FUNCTION>
 
 def run_tests(question, f):
-    with open("test_cases.json", 'r') as file:
+    with open("testing/test_cases_python.json", 'r') as file:
         test_cases = json.load(file)
     original_stdout = sys.stdout
     tcs = test_cases[question]

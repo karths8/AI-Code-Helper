@@ -11,7 +11,6 @@ import os
 
 def make_directory(dir_path):
     if not os.path.exists(dir_path):
-        # Create the directory
         os.makedirs(dir_path)
         print(f"Directory created at {dir_path}")
     else:
@@ -45,7 +44,7 @@ def generate_suggestion(messages, client, model):
 
 def modify_tester(code, q_key):
     # Read the original file
-    with open('tester.py', 'r') as file:
+    with open('testing/tester.py', 'r') as file:
         content = file.read()
     
     m = re.search("^def (.*)\(", code, re.MULTILINE)
@@ -65,11 +64,8 @@ def run_code(q_key, code):
 
     content = modify_tester(code, q_key)
     try:
-        # scope = {}
         print(content)
         exec(content)
-        
-        # result = subprocess.run(['python3','temp/tester_temp.py',q_key], capture_output=True, text=True)
     except Exception as e:
         if isinstance(e, AssertionError):
             error_traceback = str(e).replace("\\n", "\n")
@@ -148,20 +144,18 @@ def convert_python(markdown_text):
 
 def convert_to_template(question_str, code, solution, error_num, error):
     
-    first_line = "Given below is a programming question, a canonical solution and the corresponding wrong answer from a student. Please give a helpful and polite explanation as to the next steps the student can take to improve their answer"
+    first_line = "Given below is a programming question, the Instructors solution and the corresponding wrong answer from a student. Please give a helpful and polite explanation as to the next steps the student can take to improve their answer"
     if error_num==1:
         # Compilation Error
-        first_line = "Given below is a programming question,a canonical solution, the error message from compiling the code, and the corresponding wrong answer from a student"
+        first_line = "Given below is a programming question, the Instructors solution, the error message from compiling the code, and the corresponding wrong answer from a student"
         
     elif error_num==2 or error_num==3:
-        first_line = "Given below is a programming question, a canonical solution, the error message from executing the code against test cases, and the corresponding wrong answer from a student"
+        first_line = "Given below is a programming question, the Instructors solution, the error message from executing the code against test cases, and the corresponding wrong answer from a student"
     error_m=''
     if error:
         error_m = f"Error:\n{error}\n\n"
-
-    # input_str = f"Question:\n{question_str}\n\nStudent Answer:\n{code}\n\n{error_m}Canonical Solution:\n{solution}\n\n{first_line}.You are encouraged to ask questions to the student and show simple related examples to lead the student in the right direction to figure out the answer on their own. DO NOT INCLUDE CODE OR THE ACTUAL ANSWER IN YOUR RESPONSE. Start the response with something that encourages the student and commends the student on his/her progress towards the task. Do not make any mention about the canonical solution as the students will not have access to that."
-    input_str = f"Question:\n{question_str}\n\nStudent Answer:\n{code}\n\n{error_m}Canonical Solution:\n{solution}\n\n Suggestion:"
-    system_str = f"You are a polite and helpful assistant to help students learn programming. You will be deployed in an application where you must display suggestions to the student under the heading \"Suggestion:\". You will directly be addressing students and helping them make corrections in their code so that they can get it right. Do not speak about the student in the third person. {first_line}.You are encouraged to ask questions to the student and show simple related examples to lead the student in the right direction to figure out the answer on their own. DO NOT INCLUDE CODE OR THE ACTUAL ANSWER IN YOUR RESPONSE. Start the response with something that encourages the student and commends the student on his/her progress towards the task. Do not make any mention about the canonical solution as the students will not have access to that."
+    input_str = f"Question:\n{question_str}\n\nStudent Answer:\n{code}\n\n{error_m}Instructors Solution:\n{solution}\n\n Suggestion:"
+    system_str = f"You are a polite and helpful assistant to help students learn programming. You will be deployed in an application where you must display suggestions to the student under the heading \"Suggestion:\". You will directly be addressing students and helping them make corrections in their code so that they can get it right. Do not speak about the student in the third person. {first_line}.You are encouraged to ask questions to the student and show simple related examples to lead the student in the right direction to figure out the answer on their own. DO NOT INCLUDE CODE OR THE ACTUAL ANSWER IN YOUR RESPONSE. Start the response with something that encourages the student and commends the student on his/her progress towards the task. Be concise in your response and do not overwhelm the student with information. Do not make any mention about the Instructors solution as the students will not have access to that."
     messages = [{"role": "system", "content": system_str},
     {"role": "user", "content": input_str}]
 

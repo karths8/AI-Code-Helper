@@ -11,20 +11,15 @@ import time
 app = Flask(__name__)
 api_key = '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'
 client_openai = OpenAI(api_key=api_key)
-# client_anthropic = anthropic.Anthropic(api_key="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")
 generated_content = None
 questions = {}
-solutions = read_from_json('solutions.json')
-test_cases_all_q = read_from_json('test_cases.json')
-# model = "claude-3-opus-20240229"
-# model = "claude-3-sonnet-20240229"
-# model = "claude-3-haiku-20240307"
+solutions = read_from_json('testing/solutions_python.json')
+test_cases_all_q = read_from_json('testing/test_cases_python.json')
 model = "gpt-4-turbo-preview"
-# model = "gpt-3.5-turbo"
-vendor = 'anthropic' if 'claude' in model else 'openai'
+vendor = 'openai'
 # messages = None
 start_time = None
-gpt_calls = 0
+gpt_calls = {}
 results = {}
 
 # questions_cache = read_from_json('cache/questions_cache.json')
@@ -80,7 +75,9 @@ def home():
 
 def create_gpt_response(messages,client,q, a, error, q_key):
     global generated_content, questions_cache, model, gpt_calls
-    gpt_calls+=1
+    if q_key not in gpt_calls:
+        gpt_calls[q_key] = 0
+    gpt_calls[q_key]+=1
     print("Inside GPT response")
     suggestion = markdown.markdown(generate_suggestion(messages, client, model))
     questions_cache[q_key] = {"question":q, "code":a, "suggestion": suggestion, 'error':error}
