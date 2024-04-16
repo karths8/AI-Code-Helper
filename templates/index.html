@@ -44,9 +44,11 @@
     <meta charset="UTF-8">
     <title>Code Helper</title>
 <style>
+
+
 #circular-image {
     float: left;
-    margin-left: 400px;
+    margin-left: {{ design_dict["image_margin_left"] }};
     margin-bottom: 40px;
     /* margin-top: 250px; */
     margin-right: 20px;
@@ -60,8 +62,8 @@
     border: 2px solid black;
     border-radius: 10px;
     padding: 20px;
-    width: 1000px;  /* Set your desired width */
-    height: 900px; /* Set your desired height */
+    width: {{ design_dict["container_width"] }};  /* Set your desired width */
+    height: {{ design_dict["container_height"] }}; /* Set your desired height */
     resize: none;  /* Optional: Prevents resizing */
     overflow: auto;
     padding-top:5px;
@@ -106,8 +108,8 @@
     border-radius: 10px;
     padding: 20px;
     font-size: 30px;
-    width: 1000px;  /* Set your desired width */
-    height: 900px; /* Set your desired height */
+    width: {{ design_dict["container_width"] }};  /* Set your desired width */
+    height: {{ design_dict["container_height"] }}; /* Set your desired height */
     justify-content: center; /* Center horizontally */
     align-items: center;     /* Center vertically */
     resize: none;  /* Optional: Prevents resizing */
@@ -184,7 +186,7 @@
             <h4 class="custom-heading">Error/Traceback</h4>
             <pre>{{ error|safe }}</pre>
             {% endif %}
-            {% if student_code is not none %} 
+            {% if student_code is not none and not nollm %} 
             
             <h4 class="custom-heading">Suggestion given by the model</h4>
             <div id="loading">

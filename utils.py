@@ -8,6 +8,14 @@ import io
 import subprocess
 import time
 import os
+import shutil
+
+
+def remove_ml_comments(java_code):
+    pattern = re.compile(r'/\*.*?\*/', re.DOTALL)
+    cleaned_code = re.sub(pattern, '', java_code)
+    return cleaned_code
+
 
 def make_directory(dir_path):
     if not os.path.exists(dir_path):
@@ -15,6 +23,16 @@ def make_directory(dir_path):
         print(f"Directory created at {dir_path}")
     else:
         print(f"Directory already exists at {dir_path}")
+
+def copy_contents(src, dest):
+    make_directory(dest)
+    for item in os.listdir(src):
+        src_path = os.path.join(src, item)
+        dest_path = os.path.join(dest, item)
+        if os.path.isdir(src_path):
+            shutil.copytree(src_path, dest_path, dirs_exist_ok=True)
+        else:
+            shutil.copy2(src_path, dest_path)
 
 def generate_suggestion(messages, client, model):
     start_time = time.time()
@@ -78,9 +96,10 @@ def check_test_cases_java(output, q_key):
     return None
 
 
-def run_code_java(q_key):
+def run_code_java(q_key, code_path):
     print(f"Running java program {q_key}")
-    result = subprocess.run(['java', f'code/Java/{q_key}.java'], capture_output=True, text=True)
+    prog_path = os.path.join(code_path, f'{q_key}.java')
+    result = subprocess.run(['java', prog_path], capture_output=True, text=True)
     err = result.stderr
     if err:
         return 1, err
@@ -91,7 +110,7 @@ def run_code_java(q_key):
     return 0,"All tests Passed!"
 
 # def append_test_cases(test_cases, code):
-def code_runner_java(q_key,timeout=10):
+def code_runner_java(q_key, code_path, timeout=10):
     # Define a process to run the code
     # process = multiprocessing.Process(target=run_code_java, args=(q_key,))
     # process.start()
@@ -104,7 +123,7 @@ def code_runner_java(q_key,timeout=10):
     #     return 3,"Possible Infinite Loop"
     
     # Otherwise, run the code normally and return the result
-    return run_code_java(q_key)
+    return run_code_java(q_key, code_path)
     
 
 def code_runner_python(code, q_key,timeout=10):
@@ -210,6 +229,16 @@ def convert_python(markdown_text):
 
 def convert_to_template(question_str, code, solution, error_num, error, example):
     question_str_modified = f"{question_str}\n\n{example}"
+    m_err = re.search("Test failed for n=(\d).", error)
+    
+    if m_err:
+        if re.search("^def (.*)\(", code, re.MULTILINE):
+            m = re.search("^def (.*)\(", code, re.MULTILINE)
+        else:
+            m = re.search('public static void (.*)\(', code)
+        fn_prefix = f"{m.group(1)}(n={m_err.group(1)})"
+        error = f"Ran output for {fn_prefix}\n" + error
+    
     
     first_line = "Given below is a programming question, the Instructors solution and the corresponding wrong answer from a student. Please give a helpful and polite explanation as to the next steps the student can take to improve their answer"
     if error_num==1:

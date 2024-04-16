@@ -6,9 +6,23 @@ import markdown
 import threading
 import json
 import re
-from utils import extract_code, read_from_json, convert_to_template, generate_suggestion,code_runner_java, code_runner_python, write_to_json, make_directory
+from utils import extract_code, read_from_json, convert_to_template, generate_suggestion,code_runner_java, code_runner_python, write_to_json, make_directory, copy_contents, remove_ml_comments
 from openai import OpenAI
 import time
+import argparse
+
+parser = argparse.ArgumentParser(description="None")
+parser.add_argument('--nollm',  action='store_true',help='Pass this argument for nollm mode')
+parser.add_argument('--big',  action='store_true',help='Pass this argument for big screen mode')
+
+args = parser.parse_args()
+
+if args.big:
+    design_dict = {'container_width':'1000px', 'container_height':'900px', 'image_margin_left':'400px'}
+else:
+    design_dict = {'container_width':'1000px', 'container_height':'900px', 'image_margin_left':'400px'}
+
+
 
 app = Flask(__name__)
 api_key = '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'
@@ -27,6 +41,7 @@ questions_cache = {}
 student_details = {}
 question_button_clicks = {}
 execution_times = {}
+code_path = ''
 
 def get_student_results():
     global results
@@ -42,11 +57,14 @@ def login():
 
 @app.route('/start', methods=['POST'])
 def start():
-    global student_details
+    global student_details, code_path
     student_name = request.form.get('student_name')
     unique_id = request.form.get('unique_id')
     programming_language = request.form.get('programming_language')
     student_details = {'student_name':student_name, 'unique_id':unique_id, 'programming_language':programming_language}
+    code_path = os.path.join('code', programming_language, unique_id)
+    lang_path = os.path.join('code', programming_language, 'base')
+    copy_contents(lang_path, code_path)
     return redirect(url_for('welcome_page'))
 
 @app.route('/welcome_page')
@@ -65,7 +83,7 @@ def submit():
     total_score = 0
     for q_key in results:
         total_score+=results[q_key]['score']
-    combined_results = {"results":results, "total_score":total_score, "student_details":student_details,"questions_cache":questions_cache, "model":model, "time_taken":elapsed_time, "gpt_calls":gpt_calls}
+    combined_results = {"results":results, "total_score":total_score, "student_details":student_details,"questions_cache":questions_cache, "model":model, "time_taken":elapsed_time, "gpt_calls":gpt_calls, 'No-LLM': args.nollm}
     write_to_json(filename, combined_results)
     return render_template('submitted.html')
         
@@ -76,15 +94,21 @@ def home():
 
 def create_gpt_response(messages,client,q, a, error,example, q_key):
     global generated_content, questions_cache, model, gpt_calls
-    if q_key not in gpt_calls:
-        gpt_calls[q_key] = 0
-    gpt_calls[q_key]+=1
-    print("Inside GPT response")
-    msg, exec_time = generate_suggestion(messages, client, model)
-    if q_key not in execution_times:
-        execution_times[q_key] = []
-    execution_times[q_key].append(exec_time)
-    suggestion = markdown.markdown(msg)
+    
+    if args.nollm:
+        msg, exec_time = None, 0
+        suggestion = ''
+    else:
+        msg, exec_time = generate_suggestion(messages, client, model)
+        suggestion = markdown.markdown(msg)
+        if q_key not in gpt_calls:
+            gpt_calls[q_key] = 0
+        gpt_calls[q_key]+=1
+        print("Inside GPT response")
+        if q_key not in execution_times:
+            execution_times[q_key] = []
+        execution_times[q_key].append(exec_time)
+    
     questions_cache[q_key] = {"question":q, "code":a, "suggestion": suggestion, 'error':error, 'example':example}
     generated_content = suggestion
 
@@ -99,9 +123,12 @@ def get_content():
 
 @app.route('/code_helper')
 def code_helper():
-    global generated_content, questions, questions_cache, messages, results, question_button_clicks, student_details
+    global generated_content, questions, questions_cache, messages, results, question_button_clicks, student_details, code_path, design_dict
     lang = student_details['programming_language']
-    path = {'Python':'code/test_notebook.ipynb', "Java": 'code/Java'}
+    if lang=='Python':
+        path = {'Python': os.path.join(code_path, 'test_notebook.ipynb'), "Java": None}
+    else:
+        path = {'Python': 'code/Python/base/test_notebook.ipynb', "Java": code_path}
     generated_content = None  # Reset the content each time the page is loaded
     question_num = request.args.get("question")
     
@@ -123,7 +150,7 @@ def code_helper():
     if question_num=='finish':
         get_student_results()
         total_score = sum([results[i]['score'] for i in results])
-        return render_template('index.html', results=results, student_code=code, question_num=num, question_str=question_str, num_of_questions=num_of_questions, error=error, total_score=total_score)
+        return render_template('index.html', results=results, student_code=code, question_num=num, question_str=question_str, num_of_questions=num_of_questions, error=error, total_score=total_score, nollm=args.nollm, design_dict=design_dict)
     
     
     if question_num:
@@ -133,8 +160,11 @@ def code_helper():
         question_button_clicks[q_key]+=1
         selected_question = questions[q_key]
         question_str, code, example = selected_question['question'], selected_question['code'].strip(), selected_question['example']
-        java_pattern = r"public static void main\(String args\[\]\) \{[\s\S]*?\}"
-        code = re.sub(java_pattern, '', code)
+        
+        if lang=='Java':
+            java_pattern = r"public static void main\(String args\[\]\) \{[\s\S]*?\}"
+            code = re.sub(java_pattern, '', code)
+            code = remove_ml_comments(code).strip()
         if q_key in questions_cache:
             cached_question = questions_cache[q_key]
             cached_question_str, cached_code, cached_suggestion, cached_error, cached_example = cached_question['question'], cached_question['code'].strip(), cached_question['suggestion'], cached_question['error'],cached_question['example']
@@ -148,7 +178,7 @@ def code_helper():
             if lang=='Python':
                 error_num, error = code_runner_python(code, q_key)
             else:
-                error_num, error = code_runner_java(q_key)
+                error_num, error = code_runner_java(q_key, code_path)
             
             solution = solutions[lang][q_key]
             if error=="All tests Passed!":
@@ -160,7 +190,7 @@ def code_helper():
                 client = client_openai if vendor=='openai' else client_anthropic
                 messages = convert_to_template(question_str, code, solution, error_num, error, example)
                 threading.Thread(target=create_gpt_response, args=(messages,client,question_str, code,error,example, q_key)).start()
-    return render_template('index.html', student_code=code, question_num=num, question_str=question_str, num_of_questions=num_of_questions, error=error, total_score=total_score, results=None)
+    return render_template('index.html', student_code=code, question_num=num, question_str=question_str, num_of_questions=num_of_questions, error=error, total_score=total_score, results=None, nollm=args.nollm, design_dict=design_dict)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
