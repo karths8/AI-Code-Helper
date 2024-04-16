@@ -1,10 +1,12 @@
+
+
 from flask import Flask, render_template, url_for, redirect, request, jsonify, Response
 import os
 import markdown
 import threading
 import json
 import re
-from utils import extract_cells, read_from_json, convert_to_template, generate_suggestion, code_runner, write_to_json, make_directory
+from utils import extract_code, read_from_json, convert_to_template, generate_suggestion,code_runner_java, code_runner_python, write_to_json, make_directory
 from openai import OpenAI
 import time
 
@@ -13,19 +15,18 @@ api_key = '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'
 client_openai = OpenAI(api_key=api_key)
 generated_content = None
 questions = {}
-solutions = read_from_json('testing/solutions_python.json')
-test_cases_all_q = read_from_json('testing/test_cases_python.json')
+solutions = read_from_json('testing/solutions.json')
+test_cases_all_q = read_from_json('testing/test_cases.json')
 model = "gpt-4-turbo-preview"
 vendor = 'openai'
 # messages = None
 start_time = None
 gpt_calls = {}
 results = {}
-
-# questions_cache = read_from_json('cache/questions_cache.json')
 questions_cache = {}
 student_details = {}
 question_button_clicks = {}
+execution_times = {}
 
 def get_student_results():
     global results
@@ -79,7 +80,11 @@ def create_gpt_response(messages,client,q, a, error,example, q_key):
         gpt_calls[q_key] = 0
     gpt_calls[q_key]+=1
     print("Inside GPT response")
-    suggestion = markdown.markdown(generate_suggestion(messages, client, model))
+    msg, exec_time = generate_suggestion(messages, client, model)
+    if q_key not in execution_times:
+        execution_times[q_key] = []
+    execution_times[q_key].append(exec_time)
+    suggestion = markdown.markdown(msg)
     questions_cache[q_key] = {"question":q, "code":a, "suggestion": suggestion, 'error':error, 'example':example}
     generated_content = suggestion
 
@@ -87,7 +92,6 @@ def create_gpt_response(messages,client,q, a, error,example, q_key):
 @app.route('/get-content')
 def get_content():
     global generated_content
-    
     if generated_content is not None:
         return jsonify({'status': 'ready', 'content': generated_content})
     else:
@@ -95,7 +99,9 @@ def get_content():
 
 @app.route('/code_helper')
 def code_helper():
-    global generated_content, questions, questions_cache, messages, results, question_button_clicks
+    global generated_content, questions, questions_cache, messages, results, question_button_clicks, student_details
+    lang = student_details['programming_language']
+    path = {'Python':'code/test_notebook.ipynb', "Java": 'code/Java'}
     generated_content = None  # Reset the content each time the page is loaded
     question_num = request.args.get("question")
     
@@ -103,7 +109,7 @@ def code_helper():
     code = None
     question_str=None
     suggestion=None
-    questions = extract_cells('code/test_notebook.ipynb')
+    questions = extract_code(path, lang)
     num_of_questions = len(questions)
     for i in range (1, num_of_questions+1):
         q_num_str = f"Q{i}"
@@ -126,7 +132,9 @@ def code_helper():
         q_key = f'Q{num}'
         question_button_clicks[q_key]+=1
         selected_question = questions[q_key]
-        question_str, code, example = selected_question['question'], selected_question['code'].strip(), questions['example']
+        question_str, code, example = selected_question['question'], selected_question['code'].strip(), selected_question['example']
+        java_pattern = r"public static void main\(String args\[\]\) \{[\s\S]*?\}"
+        code = re.sub(java_pattern, '', code)
         if q_key in questions_cache:
             cached_question = questions_cache[q_key]
             cached_question_str, cached_code, cached_suggestion, cached_error, cached_example = cached_question['question'], cached_question['code'].strip(), cached_question['suggestion'], cached_question['error'],cached_question['example']
@@ -137,9 +145,12 @@ def code_helper():
         else:
             # invoke gpt response
             test_cases = test_cases_all_q[q_key]
-            error_num, error = code_runner(code=code, q_key=q_key)
+            if lang=='Python':
+                error_num, error = code_runner_python(code, q_key)
+            else:
+                error_num, error = code_runner_java(q_key)
             
-            solution = solutions[q_key]
+            solution = solutions[lang][q_key]
             if error=="All tests Passed!":
                 model_resp = "Great Job! You get full points for this problem"
                 questions_cache[q_key] = {"question":question_str, "code":code, "suggestion": model_resp, 'error':error, 'example': example}
@@ -147,7 +158,7 @@ def code_helper():
                 # time.sleep(1)
             else:
                 client = client_openai if vendor=='openai' else client_anthropic
-                messages = convert_to_template(question_str, code,solution, error_num, error, example)
+                messages = convert_to_template(question_str, code, solution, error_num, error, example)
                 threading.Thread(target=create_gpt_response, args=(messages,client,question_str, code,error,example, q_key)).start()
     return render_template('index.html', student_code=code, question_num=num, question_str=question_str, num_of_questions=num_of_questions, error=error, total_score=total_score, results=None)
 

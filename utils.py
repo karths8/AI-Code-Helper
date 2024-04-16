@@ -18,29 +18,18 @@ def make_directory(dir_path):
 
 def generate_suggestion(messages, client, model):
     start_time = time.time()
-    if 'claude' in model:
-        completion = client.messages.create(
-            model=model,
-            max_tokens = 500,
-            system=messages[0]['content'],
-            messages=messages[1:]
-        )
-
-        completion = convert_python(completion.content[0].text)
-
-    else:
-        completion = client.chat.completions.create(
-          model=model,
-          messages=messages
-        )
-        # temp_var = completion.choices[0].message.content
-        completion = convert_python(completion.choices[0].message.content)
+    completion = client.chat.completions.create(
+      model=model,
+      messages=messages
+    )
+    # temp_var = completion.choices[0].message.content
+    completion = convert_python(completion.choices[0].message.content)
     end_time = time.time()
     execution_time = end_time - start_time
     execution_time = round(execution_time, 3)
     print(f"Time For LLM Call: {execution_time} seconds")
     print("LLM Called!")
-    return completion
+    return completion, execution_time
 
 def modify_tester(code, q_key):
     # Read the original file
@@ -54,7 +43,7 @@ def modify_tester(code, q_key):
     content = content.replace('<FUNCTION>', code).replace("<QUESTION>", f"'{q_key}'").replace("<FUNCTION_NAME>", f_name)
     return content
 
-def run_code(q_key, code):
+def run_code_python(q_key, code):
     try:
         # Try to compile the code first to catch syntax errors
         compiled_code = compile(code, '<string>', 'exec')
@@ -76,12 +65,51 @@ def run_code(q_key, code):
     
     return 0,"All tests Passed!"
 
+def check_test_cases_java(output, q_key):
+    q_dict = {1:1, 2:2, 3:5, 4:7}
+    test_cases = read_from_json('testing/test_cases.json')[q_key]
+    outputs = re.findall("<TC(\d)>([\s\S]*?)<\/TC\d>", output)
+    outputs = {q_dict[int(k)]:v.strip() for k,v in outputs}
+    for i in test_cases:
+        print(test_cases[i])
+        print(outputs)
+        if test_cases[i].strip()!=outputs[int(i)]:
+            return f"Test failed for n={str(i)}. \n\nExpected:\n{test_cases[i].strip()}\nActual:\n{outputs[int(i)]}"
+    return None
+
+
+def run_code_java(q_key):
+    print(f"Running java program {q_key}")
+    result = subprocess.run(['java', f'code/Java/{q_key}.java'], capture_output=True, text=True)
+    err = result.stderr
+    if err:
+        return 1, err
+    tc_err = check_test_cases_java(result.stdout, q_key)
+    if tc_err:
+        return 2,tc_err
+    
+    return 0,"All tests Passed!"
+
 # def append_test_cases(test_cases, code):
+def code_runner_java(q_key,timeout=10):
+    # Define a process to run the code
+    # process = multiprocessing.Process(target=run_code_java, args=(q_key,))
+    # process.start()
+    # process.join(timeout)
+
+    # # If the process is still active after the timeout, we assume it's an infinite loop
+    # if process.is_alive():
+    #     process.terminate()
+    #     process.join()
+    #     return 3,"Possible Infinite Loop"
+    
+    # Otherwise, run the code normally and return the result
+    return run_code_java(q_key)
     
 
-def code_runner(code, q_key, timeout=10):
+def code_runner_python(code, q_key,timeout=10):
     # Define a process to run the code
-    process = multiprocessing.Process(target=run_code, args=(q_key,code,))
+    process = multiprocessing.Process(target=run_code_python, args=(q_key,code,))
     process.start()
     process.join(timeout)
 
@@ -92,13 +120,42 @@ def code_runner(code, q_key, timeout=10):
         return 3,"Possible Infinite Loop"
     
     # Otherwise, run the code normally and return the result
-    return run_code(q_key, code)
+    return run_code_python(q_key, code)
 
 
 def remove_comments(code):
     # Pattern to match single-line comments
     pattern = re.compile(r'#.*?$|\'\'\'.*?\'\'\'|""".*?"""', re.DOTALL | re.MULTILINE)
     return re.sub(pattern, lambda m: "" if m.group(0).startswith('#') else m.group(0), code)
+
+def extract_java_code(path):
+    qs = {}
+    for f in os.listdir(path):
+        t = re.search('(Q\d).java', f)
+        if t:
+            f_path = os.path.join(path, f)
+            with open(f_path, 'r') as file:
+                contents = file.read()
+            qs[t.group(1)] = {'code':contents}
+    return qs
+            
+            
+
+def extract_code(path, lang):
+    py_qs = extract_cells(path['Python'])
+    print(py_qs)
+    if lang=='Python':
+        return py_qs
+    else:
+        java_qs = extract_java_code(path['Java'])
+        for i in java_qs:
+            for j in py_qs:
+                if i==j:
+                    java_qs[i]['example'] = py_qs[j]['example']
+                    java_qs[i]['question'] = py_qs[j]['question']
+        return java_qs
+    
+
 
 def extract_cells(notebook_path):
     with open(notebook_path, 'r', encoding='utf-8') as f:
@@ -157,7 +214,7 @@ def convert_to_template(question_str, code, solution, error_num, error, example)
     first_line = "Given below is a programming question, the Instructors solution and the corresponding wrong answer from a student. Please give a helpful and polite explanation as to the next steps the student can take to improve their answer"
     if error_num==1:
         # Compilation Error
-        first_line = "Given below is a programming question, the Instructors solution, the error message from compiling the code, and the corresponding wrong answer from a student"
+        first_line = "Given below is a programming question, the Instructors solution, the error message from running or compiling the code, and the corresponding wrong answer from a student"
         
     elif error_num==2 or error_num==3:
         first_line = "Given below is a programming question, the Instructors solution, the error message from executing the code against test cases, and the corresponding wrong answer from a student"

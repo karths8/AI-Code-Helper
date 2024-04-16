@@ -4,7 +4,7 @@ import markdown
 import threading
 import json
 import re
-from utils import extract_cells, read_from_json, convert_to_template, generate_suggestion, code_runner, write_to_json, make_directory
+from utils import extract_cells, read_from_json, convert_to_template, generate_suggestion, code_runner_python, write_to_json, make_directory
 from openai import OpenAI
 import time
 
@@ -13,8 +13,8 @@ api_key = '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'
 client_openai = OpenAI(api_key=api_key)
 generated_content = None
 questions = {}
-solutions = read_from_json('testing/solutions_python.json')
-test_cases_all_q = read_from_json('testing/test_cases_python.json')
+solutions = read_from_json('testing/solutions.json')
+test_cases_all_q = read_from_json('testing/test_cases.json')
 model = "gpt-4-turbo-preview"
 vendor = 'openai'
 # messages = None
@@ -135,11 +135,11 @@ def code_helper():
             else:
                 # invoke gpt response
                 test_cases = test_cases_all_q[q_key]
-                error_num, error = code_runner(code=code, q_key=q_key)
+                error_num, error = code_runner_python(code=code, q_key=q_key)
                 print(error_num)
                 print(error)
                 
-                solution = solutions[q_key]
+                solution = solutions['Python'][q_key]
                 if error=="All tests Passed!":
                     model_resp = "Great Job! You get full points for this problem"
                     questions_cache[q_key] = {"question":question_str, "code":code, "suggestion": model_resp, 'error':error}
