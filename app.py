@@ -20,7 +20,7 @@ args = parser.parse_args()
 if args.big:
     design_dict = {'container_width':'1000px', 'container_height':'900px', 'image_margin_left':'400px'}
 else:
-    design_dict = {'container_width':'800px', 'container_height':'700px', 'image_margin_left':'400px', 'button_margin': '200px'}
+    design_dict = {'container_width':'800px', 'container_height':'700px', 'image_margin_left':'300px', 'button_margin': '200px'}
 
 
 
