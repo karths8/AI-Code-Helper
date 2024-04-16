@@ -211,7 +211,7 @@
                 <p class="medium-text"><strong>Score:</strong> {{ d["score"] }} / 1</p>
             {% endfor %}
             <br>
-            <p class="large-text"><strong>Total Score:</strong> {{ total_score }} / {{ results|length }}</p>
+            <p class="large-text"><strong>Total Score:</strong> {{ total_score }} / {{ results|length -1 }}</p>
             <form action="/submit" method="post">
                 <!-- Add other form elements here as needed -->
                 <button type="submit" class="button-element">Submit</button>
