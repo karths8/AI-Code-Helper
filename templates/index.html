@@ -49,12 +49,12 @@
 #circular-image {
     float: left;
     margin-left: {{ design_dict["image_margin_left"] }};
-    margin-bottom: 40px;
+    margin-bottom: {{ design_dict["image_margin_bottom"]}};
     /* margin-top: 250px; */
     margin-right: 20px;
     border-radius: 50%;
-    width: 200px; /* or any other size */
-    height: 200px; /* should be the same as width for a perfect circle */
+    width: {{ design_dict["image_size_width"]}}; /* or any other size */
+    height: {{ design_dict["image_size_height"]}}; /* should be the same as width for a perfect circle */
 }
 #fixed-size-textbox {
     display: inline-block; 

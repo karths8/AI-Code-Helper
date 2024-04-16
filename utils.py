@@ -103,8 +103,16 @@ def check_test_cases_java(output, q_key):
 def run_code_java(q_key, code_path):
     print(f"Running java program {q_key}")
     prog_path = os.path.join(code_path, f'{q_key}.java')
-    result = subprocess.run(['java', prog_path], capture_output=True, text=True)
-    err = result.stderr
+    try:
+        # Running a Java program with a timeout
+        result = subprocess.run(['java', prog_path], capture_output=True, text=True, timeout=15)
+        err = result.stderr
+    except subprocess.TimeoutExpired:
+        err = "The process ran longer than the allowed timeout and was terminated."
+    except subprocess.CalledProcessError as e:
+        err = f"The subprocess encountered an error: {e}"
+    
+    
     if err:
         return 1, err
     tc_err = check_test_cases_java(result.stdout, q_key)
