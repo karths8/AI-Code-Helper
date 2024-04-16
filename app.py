@@ -73,14 +73,14 @@ def submit():
 def home():
     return redirect(url_for('login'))
 
-def create_gpt_response(messages,client,q, a, error, q_key):
+def create_gpt_response(messages,client,q, a, error,example, q_key):
     global generated_content, questions_cache, model, gpt_calls
     if q_key not in gpt_calls:
         gpt_calls[q_key] = 0
     gpt_calls[q_key]+=1
     print("Inside GPT response")
     suggestion = markdown.markdown(generate_suggestion(messages, client, model))
-    questions_cache[q_key] = {"question":q, "code":a, "suggestion": suggestion, 'error':error}
+    questions_cache[q_key] = {"question":q, "code":a, "suggestion": suggestion, 'error':error, 'example':example}
     generated_content = suggestion
 
 
@@ -126,10 +126,10 @@ def code_helper():
         q_key = f'Q{num}'
         question_button_clicks[q_key]+=1
         selected_question = questions[q_key]
-        question_str, code = selected_question['question'], selected_question['code'].strip()
+        question_str, code, example = selected_question['question'], selected_question['code'].strip(), questions['example']
         if q_key in questions_cache:
             cached_question = questions_cache[q_key]
-            cached_question_str, cached_code, cached_suggestion, cached_error = cached_question['question'], cached_question['code'].strip(), cached_question['suggestion'], cached_question['error']
+            cached_question_str, cached_code, cached_suggestion, cached_error, cached_example = cached_question['question'], cached_question['code'].strip(), cached_question['suggestion'], cached_question['error'],cached_question['example']
         if q_key in questions_cache and cached_code==code:
             # dont invoke gpt response, we dont want to calculate new response everytime help is needed for a particular question
             error = cached_error
@@ -138,19 +138,17 @@ def code_helper():
             # invoke gpt response
             test_cases = test_cases_all_q[q_key]
             error_num, error = code_runner(code=code, q_key=q_key)
-            print(error_num)
-            print(error)
             
             solution = solutions[q_key]
             if error=="All tests Passed!":
                 model_resp = "Great Job! You get full points for this problem"
-                questions_cache[q_key] = {"question":question_str, "code":code, "suggestion": model_resp, 'error':error}
+                questions_cache[q_key] = {"question":question_str, "code":code, "suggestion": model_resp, 'error':error, 'example': example}
                 generated_content = model_resp
                 # time.sleep(1)
             else:
                 client = client_openai if vendor=='openai' else client_anthropic
-                messages = convert_to_template(question_str, code,solution, error_num, error)
-                threading.Thread(target=create_gpt_response, args=(messages,client,question_str, code,error, q_key)).start()
+                messages = convert_to_template(question_str, code,solution, error_num, error, example)
+                threading.Thread(target=create_gpt_response, args=(messages,client,question_str, code,error,example, q_key)).start()
     return render_template('index.html', student_code=code, question_num=num, question_str=question_str, num_of_questions=num_of_questions, error=error, total_score=total_score, results=None)
 
 if __name__ == '__main__':

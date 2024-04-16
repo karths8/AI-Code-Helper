@@ -124,6 +124,15 @@ def extract_cells(notebook_path):
                 if q_str not in qs:
                     qs[q_str] = {}
                 qs[q_str]['code'] = code
+        if c['cell_type']=='raw':
+            q_match = re.search("Q(\d*)", src)
+            if q_match:
+                q_num = q_match.group(1)
+                q_str = f"Q{q_num}"
+                t = {k:v for k,v in c.items() if k=='source'}
+                content = None if 'source' not in t else t['source']
+                if content:
+                    qs[q_str]['example'] = content
     return qs
 
 def write_to_json(filename, data):
@@ -142,7 +151,8 @@ def convert_python(markdown_text):
     html_text = re.sub(pattern, replacement, markdown_text, flags=re.DOTALL)
     return html_text
 
-def convert_to_template(question_str, code, solution, error_num, error):
+def convert_to_template(question_str, code, solution, error_num, error, example):
+    question_str_modified = f"{question_str}\n\n{example}"
     
     first_line = "Given below is a programming question, the Instructors solution and the corresponding wrong answer from a student. Please give a helpful and polite explanation as to the next steps the student can take to improve their answer"
     if error_num==1:
@@ -154,11 +164,14 @@ def convert_to_template(question_str, code, solution, error_num, error):
     error_m=''
     if error:
         error_m = f"Error:\n{error}\n\n"
-    input_str = f"Question:\n{question_str}\n\nStudent Answer:\n{code}\n\n{error_m}Instructors Solution:\n{solution}\n\n Suggestion:"
+    input_str = f"Question:\n{question_str_modified}\n\nStudent Answer:\n{code}\n\n{error_m}Instructors Solution:\n{solution}\n\n Suggestion:"
     system_str = f"You are a polite and helpful assistant to help students learn programming. You will be deployed in an application where you must display suggestions to the student under the heading \"Suggestion:\". You will directly be addressing students and helping them make corrections in their code so that they can get it right. Do not speak about the student in the third person. {first_line}.You are encouraged to ask questions to the student and show simple related examples to lead the student in the right direction to figure out the answer on their own. DO NOT INCLUDE CODE OR THE ACTUAL ANSWER IN YOUR RESPONSE. Start the response with something that encourages the student and commends the student on his/her progress towards the task. Be concise in your response and do not overwhelm the student with information. Do not make any mention about the Instructors solution as the students will not have access to that."
     messages = [{"role": "system", "content": system_str},
     {"role": "user", "content": input_str}]
 
-    print(json.dumps(messages, indent=4))
+    # print(json.dumps(messages, indent=4))
+    for i in messages:
+        print(i['role'])
+        print(i['content'])
     
     return messages
