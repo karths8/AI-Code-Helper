@@ -20,7 +20,7 @@ args = parser.parse_args()
 if args.big:
     design_dict = {'container_width':'1000px', 'container_height':'900px', 'image_margin_left':'400px'}
 else:
-    design_dict = {'container_width':'1000px', 'container_height':'900px', 'image_margin_left':'400px'}
+    design_dict = {'container_width':'800px', 'container_height':'700px', 'image_margin_left':'400px', 'button_margin': '200px'}
 
 
 
@@ -38,7 +38,7 @@ start_time = None
 gpt_calls = {}
 results = {}
 questions_cache = {}
-student_details = {}
+student_details = {'student_name':'test', 'unique_id':'123t', 'programming_language': 'Python'}
 question_button_clicks = {}
 execution_times = {}
 code_path = ''
