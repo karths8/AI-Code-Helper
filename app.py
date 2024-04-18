@@ -24,6 +24,7 @@ else:
 
 
 
+
 app = Flask(__name__)
 api_key = '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'
 client_openai = OpenAI(api_key=api_key)
