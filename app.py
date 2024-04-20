@@ -17,10 +17,13 @@ parser.add_argument('--big',  action='store_true',help='Pass this argument for b
 
 args = parser.parse_args()
 
-if args.big:
+if args.big and not args.nollm:
     design_dict = {'container_width':'1100px', 'container_height':'900px', 'image_margin_left':'500px', 'image_size_width': '200px', 'image_size_height': '200px', 'image_size_width': '200px', "image_margin_bottom": '40px', 'button_margin': '400px'}
+elif args.nollm:
+    design_dict = {'container_width':'600px', 'container_height':'620px', 'image_margin_left':'200px', 'button_margin': '100px', 'image_size_width': '0px', 'image_size_height': '0px', "image_margin_bottom": '20px'}
 else:
-    design_dict = {'container_width':'650px', 'container_height':'550px', 'image_margin_left':'200px', 'button_margin': '100px', 'image_size_width': '100px', 'image_size_height': '110px', "image_margin_bottom": '20px'}
+    design_dict = {'container_width':'600px', 'container_height':'550px', 'image_margin_left':'200px', 'button_margin': '100px', 'image_size_width': '100px', 'image_size_height': '110px', "image_margin_bottom": '20px'}
+    
 
 
 
