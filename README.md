@@ -4,6 +4,8 @@ We developed a Flask-based web application that dynamically provides students wi
 Socratic method, the application offers suggestions and guiding questions without revealing the underlying solutions. 
 To evaluate the effectiveness of the application in aiding students' coding, we conducted a between-participants (n=10) factorial study, incorporating descriptive and inferential insights through ANCOVA analysis.
 
+Please take a look at our [paper](https://drive.google.com/file/d/1rJbfZg8Q0PaftnKT80rN8SKRxHQ4uhEM/view) for more details!
+
 # Authors
 
 Karthik Suresh (ksuresh6@wisc.edu) \
